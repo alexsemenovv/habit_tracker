@@ -1,8 +1,8 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 
-from bot.keyboards.kbs import main_keyboard
+from bot.keyboards.inline_keyboard import main_keyboard
 
 start_router = Router()
 
@@ -15,6 +15,12 @@ async def cmd_start(message: Message) -> None:
         "Если хочешь посмотреть что умеет этот бот нажми /help👈",
         reply_markup=main_keyboard()
     )
+
+
+@start_router.callback_query(F.data == "add_h")
+async def cmd_start(call: CallbackQuery):
+    """Обрабатываем кнопку 'добавить привычку' """
+    await call.message.answer("Сработал CallbackQuery!!!")
 
 
 @start_router.message(Command("help"))

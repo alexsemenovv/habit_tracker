@@ -1,10 +1,18 @@
 import os
-from dotenv import load_dotenv, find_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-if not find_dotenv():
-    exit('Переменные окружения не загружены т.к. отсутствует фал .env')
-else:
-    load_dotenv()
 
-TOKEN = os.getenv("TOKEN")
+class Settings(BaseSettings):
+    BOT_TOKEN: str
+    ADMIN_ID: int
+    BASE_SITE: str
+    model_config = SettingsConfigDict(
+        env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+    )
 
+    def get_webhook(self) -> str:
+        """Возвращает URL вебхука с кодированием специальных символов."""
+        return f"{self.BASE_SITE}/webhook"
+
+
+settings = Settings()

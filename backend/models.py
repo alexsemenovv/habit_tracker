@@ -16,7 +16,7 @@ class User(Base):
     last_name: Mapped[str] = Column(String)
     username: Mapped[str] = Column(String, nullable=False, index=True)
 
-    habits: Mapped[List["Habit"]] = relationship("Habit", back_populates="user")
+    habits: Mapped[List["Habit"]] = relationship("Habit", back_populates="user", cascade="all, delete-orphan")
 
 
 class Habit(Base):

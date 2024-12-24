@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import INTEGER, Column, String
+from sqlalchemy import INTEGER, Column, String, ForeignKey
 from sqlalchemy.orm import Mapped, relationship
 
 from backend.database import Base
@@ -26,5 +26,6 @@ class Habit(Base):
     id: Mapped[int] = Column(INTEGER, primary_key=True, autoincrement=True)
     habit_name: Mapped[str] = Column(String, nullable=False, index=True)
     description: Mapped[str] = Column(String)
+    user_id: Mapped[int] = Column(ForeignKey("users.id"), nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="habits")

@@ -1,4 +1,4 @@
-from base import BaseDAO
+from backend.dao.base import BaseDAO
 from backend.models import User, Habit
 
 

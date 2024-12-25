@@ -71,8 +71,47 @@ class BaseDAO:
                 new_instance = cls.model(**values)
                 session.add(new_instance)
                 try:
+                    await session.flush()
                     await session.commit()
                 except SQLAlchemyError as e:
                     await session.rollback()
                     raise e
                 return new_instance
+
+    @classmethod
+    async def delete(cls, model):
+        """
+        Асинхронно удаляет один экземпляр модели которую передали
+
+        Аргументы:
+            model: Модель из таблицы.
+
+        Возвращает:
+            bool
+        """
+        async with async_session() as session:
+            await session.delete(model)
+            await session.commit()
+            return True
+
+    @classmethod
+    async def put(cls, old_model, new_model):
+        """
+        Асинхронно обновляет один экземпляр переданной модели
+
+        Аргументы:
+            old_model: Старая модель
+            new_model: Обновленная модель
+
+
+        Возвращает:
+            bool
+        """
+        async with async_session() as session:
+            async with session.begin():
+                # Закрепляем объект в текущей сессии
+                db_model = await session.merge(old_model)
+                # Обновляем поля
+                db_model.habit_name = new_model.habit_name
+                db_model.description = new_model.description
+            return True

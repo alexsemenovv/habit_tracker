@@ -7,6 +7,7 @@ from aiogram.types import Update
 from bot.create_bot import bot, dp
 from bot.config import settings
 from bot.run_bot import routers, start_bot, stop_bot
+from backend.api.habits import router as habits_router
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s - [%(levelname)s] -  %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s")
@@ -32,6 +33,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(habits_router)
 
 
 @app.post("/webhook")

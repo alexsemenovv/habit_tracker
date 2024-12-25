@@ -18,16 +18,18 @@ async def cmd_start(message: Message) -> None:
     """Обработка команды старт"""
     logger.info("Нажата команда /start")
 
-    user = await UserDAO.find_one_or_none(telegram_id=message.from_user.id)
+    # TODO Здесь нужно выполнить проверку авторизации наверно
+    # user = await UserDAO.find_one_or_none(telegram_id=message.from_user.id)
 
-    if not user:
-        logger.info("USER не найден")
-        await UserDAO.add(
-            telegram_id=message.from_user.id,
-            first_name=message.from_user.first_name,
-            last_name=message.from_user.last_name,
-            username=message.from_user.username
-        )
+    # if not user:
+    #     logger.info("USER не найден")
+    #     await UserDAO.add(
+    #         telegram_id=message.from_user.id,
+    #         first_name=message.from_user.first_name,
+    #         last_name=message.from_user.last_name,
+    #         username=message.from_user.username
+    #     )
+
     await message.answer(
         "Приветствую тебя!👋\n"
         "Это бот-трекер для отслеживания привычек👁\n"

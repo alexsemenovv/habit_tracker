@@ -6,5 +6,5 @@ class UserDAO(BaseDAO):
     model = User
 
 
-class ServiceDAO(BaseDAO):
+class HabitDAO(BaseDAO):
     model = Habit

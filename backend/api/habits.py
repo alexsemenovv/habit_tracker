@@ -3,9 +3,10 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, Path, HTTPException
 
-from backend.schemas import SHabitIn
+from backend.schemas import HabitSchema
 from backend.dao.dao import HabitDAO
 from backend.models import Habit
+from backend.api.auth import oauth2_scheme
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s - [%(levelname)s] -  %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s")
@@ -15,18 +16,18 @@ router = APIRouter(prefix='/api/habits', tags=["API"])
 
 
 @router.get("")
-async def get_all_my_habits():
+async def get_all_my_habits(token: Annotated[str, Depends(oauth2_scheme)]):
     """Получение списка привычек пользователя"""
     logger.info('Получение всех привычек пользователя')
     # TODO добавить проверку пользователя по ключу
 
     result: List['Habit'] = await HabitDAO.find_all()
     result.sort(key=lambda x: x.id) # сортируем привычки по id
-    return result
-
+    # return result
+    return {"token": token}
 
 @router.post("")
-async def add_habit(habit: Annotated[SHabitIn, Depends]):
+async def add_habit(habit: Annotated[HabitSchema, Depends]):
     """Добавление новой привычки"""
     logger.info('Добавляем новую привычку')
 
@@ -56,7 +57,7 @@ async def del_habit_by_id(id: int = Path(...)):
 
 
 @router.put("/{id}")
-async def update_habit_by_id(update_habit: Annotated[SHabitIn, Depends], id: int = Path(...)):
+async def update_habit_by_id(update_habit: Annotated[HabitSchema, Depends], id: int = Path(...)):
     """Редактирование привычки"""
     logger.info('Редактирование привычки по id')
 

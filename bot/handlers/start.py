@@ -1,4 +1,5 @@
 import logging
+import httpx
 
 from aiogram import Router
 from aiogram.filters import CommandStart
@@ -18,17 +19,26 @@ async def cmd_start(message: Message) -> None:
     """Обработка команды старт"""
     logger.info("Нажата команда /start")
 
-    # TODO Здесь нужно выполнить проверку авторизации наверно
-    # user = await UserDAO.find_one_or_none(telegram_id=message.from_user.id)
+    user = await UserDAO.find_one_or_none(telegram_id=message.from_user.id)
 
-    # if not user:
-    #     logger.info("USER не найден")
-    #     await UserDAO.add(
-    #         telegram_id=message.from_user.id,
-    #         first_name=message.from_user.first_name,
-    #         last_name=message.from_user.last_name,
-    #         username=message.from_user.username
-    #     )
+    if not user:
+        logger.info("USER не найден")
+        # TODO странный запрос через httpx здесь. Надо подумать по-другому
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                'http://localhost:8000/auth/register',
+                json={
+                    "telegram_id": message.from_user.id,
+                    "first_name": message.from_user.first_name,
+                    "username": message.from_user.username,
+                    "last_name": message.from_user.last_name
+                },
+                timeout=5  # Тайм-аут в секундах
+            )
+        if response.status_code == 200:
+            await message.reply("Пользователь добавлен!")
+        else:
+            await message.reply("Ошибка добавления пользователя.")
 
     await message.answer(
         "Приветствую тебя!👋\n"

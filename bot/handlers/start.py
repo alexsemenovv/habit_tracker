@@ -1,10 +1,10 @@
 import logging
-import httpx
 
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
+from backend.api.utils import send_data
 from backend.dao.dao import UserDAO
 
 logging.basicConfig(level=logging.DEBUG,
@@ -19,26 +19,33 @@ async def cmd_start(message: Message) -> None:
     """Обработка команды старт"""
     logger.info("Нажата команда /start")
 
-    user = await UserDAO.find_one_or_none(telegram_id=message.from_user.id)
+    # создаём словарь с данными пользователя
+    data = {
+        "telegram_id": message.from_user.id,
+        "first_name": message.from_user.first_name,
+        "username": message.from_user.username,
+        "last_name": message.from_user.last_name
+    }
 
+    # Проверяем существует ли юзер. Если нет - то добавляем его в бд
+    user = await UserDAO.find_one_or_none(telegram_id=message.from_user.id)
     if not user:
-        logger.info("USER не найден")
-        # TODO странный запрос через httpx здесь. Надо подумать по-другому
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                'http://localhost:8000/auth/register',
-                json={
-                    "telegram_id": message.from_user.id,
-                    "first_name": message.from_user.first_name,
-                    "username": message.from_user.username,
-                    "last_name": message.from_user.last_name
-                },
-                timeout=5  # Тайм-аут в секундах
-            )
-        if response.status_code == 200:
-            await message.reply("Пользователь добавлен!")
-        else:
-            await message.reply("Ошибка добавления пользователя.")
+        logger.error("USER не найден")
+        await send_data(
+            url="http://localhost:8000/auth/register",
+            data=data
+        )
+        logger.info("Пользователь добавлен в БД")
+
+    logger.info("Получаем токен")
+    token_response = await send_data(
+        url="http://localhost:8000/auth/login",
+        data=data
+    )
+    token = token_response.json().get("access_token")
+
+    # Сохраняем токен (в базе данных)
+    await UserDAO.update_token(telegram_id=message.from_user.id, token=token)
 
     await message.answer(
         "Приветствую тебя!👋\n"

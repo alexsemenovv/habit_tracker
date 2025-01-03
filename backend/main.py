@@ -4,7 +4,6 @@ import logging
 from fastapi import FastAPI, Request
 from aiogram.types import Update
 
-from backend.database import Base
 from bot.create_bot import bot, dp
 from bot.config import settings
 from bot.run_bot import routers, start_bot, stop_bot
@@ -37,8 +36,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(habits_router)
 app.include_router(auth_router)
-
-
 
 
 @app.post("/webhook")

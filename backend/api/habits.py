@@ -6,32 +6,34 @@ from fastapi import APIRouter, Depends, Path, HTTPException
 from backend.schemas import HabitSchema
 from backend.dao.dao import HabitDAO
 from backend.models import Habit
-from backend.api.auth import oauth2_scheme
+from backend.api.auth import get_current_auth_user
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s - [%(levelname)s] -  %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s")
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix='/api/habits', tags=["API"])
+router = APIRouter(prefix='/api/habits', tags=["HABITS"])
 
 
 @router.get("")
-async def get_all_my_habits(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_all_my_habits(
+        token: Annotated[str, Depends(get_current_auth_user)]
+):
     """Получение списка привычек пользователя"""
     logger.info('Получение всех привычек пользователя')
-    # TODO добавить проверку пользователя по ключу
 
     result: List['Habit'] = await HabitDAO.find_all()
-    result.sort(key=lambda x: x.id) # сортируем привычки по id
-    # return result
-    return {"token": token}
+    result.sort(key=lambda x: x.id)  # сортируем привычки по id
+    return result
+
 
 @router.post("")
-async def add_habit(habit: Annotated[HabitSchema, Depends]):
+async def add_habit(
+        habit: Annotated[HabitSchema, Depends],
+        token: Annotated[str, Depends(get_current_auth_user)]
+):
     """Добавление новой привычки"""
     logger.info('Добавляем новую привычку')
-
-    # TODO добавить проверку пользователя по ключу
 
     # добавляем привычку
     new_habit: Habit = await HabitDAO.add(**habit.model_dump())

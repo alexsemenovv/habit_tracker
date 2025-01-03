@@ -1,8 +1,13 @@
+import logging
+
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 
 from backend.database import async_session
 
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(asctime)s - [%(levelname)s] -  %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s")
+logger = logging.getLogger(__name__)
 
 class BaseDAO:
     model = None
@@ -96,6 +101,7 @@ class BaseDAO:
 
     @classmethod
     async def put(cls, old_model, new_model):
+        # TODO нужно удалить этот метод
         """
         Асинхронно обновляет один экземпляр переданной модели
 
@@ -115,3 +121,25 @@ class BaseDAO:
                 db_model.habit_name = new_model.habit_name
                 db_model.description = new_model.description
             return True
+
+    @classmethod
+    async def update(cls, instance, **fields) -> bool:
+        """
+        Асинхронно обновляет один экземпляр переданной модели
+
+        Аргументы:
+            instance: Экземпляр модели
+            **fields: dict: Поля которые нужно обновить
+
+
+        Возвращает:
+            bool
+        """
+        logger.info(f'Обновляем переданные поля')
+        async with async_session() as session:
+            async with session.begin():
+                # Закрепляем объект в текущей сессии
+                db_model = await session.merge(instance)
+                for field, value in fields.items():
+                    setattr(db_model, field, value)
+        return True

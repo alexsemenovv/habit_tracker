@@ -1,5 +1,7 @@
 from datetime import timedelta, datetime
 
+import httpx
+from httpx import Response
 import jwt
 import bcrypt
 
@@ -56,3 +58,15 @@ def validate_password(
         hashed_password=hashed_password
     )
 
+
+
+async def send_data(url: str, data: dict, headers: dict = None) -> Response:
+    """Функция для отправки запросов"""
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            url=url,
+            headers=headers,
+            json=data,
+            timeout=5
+        )
+        return response
